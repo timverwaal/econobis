@@ -33,3 +33,12 @@ Route::get('/oauth/gmail/logout', function (){
 Route::get('/oauth/gmail/checkuser', function (){
     echo LaravelGmail::check() ? 'Ingelogd' : 'Niet ingelogd';
 });
+
+Route::get('/oauth/gmail/fetch-mails', function (){
+    $messages = LaravelGmail::message()->unread()->preload()->all();
+    foreach ( $messages as $message ) {
+        echo LaravelGmail::user();
+        echo $message->getSubject();
+        echo $message->getHtmlBody();
+    }
+});
