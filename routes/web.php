@@ -38,7 +38,10 @@ Route::get('/oauth/gmail/fetch-mails', function (){
     $messages = LaravelGmail::message()->unread()->preload()->all();
     foreach ( $messages as $message ) {
         echo LaravelGmail::user();
+        echo "<br />";
         echo $message->getSubject();
+        echo "<br />";
         echo $message->getHtmlBody();
+        echo "<br />";
     }
 });
