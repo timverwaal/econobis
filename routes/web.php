@@ -29,3 +29,7 @@ Route::get('/oauth/gmail/logout', function (){
     LaravelGmail::logout(); //It returns exception if fails
     return redirect()->to('/');
 });
+
+Route::get('/oauth/gmail/checkuser', function (){
+    echo LaravelGmail::check() ? 'Ingelogd' : 'Niet ingelogd';
+});
