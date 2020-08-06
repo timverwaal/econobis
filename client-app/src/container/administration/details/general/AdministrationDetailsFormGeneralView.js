@@ -32,7 +32,13 @@ const AdministrationDetailsFormGeneralView = props => {
         logoName,
         mailboxEmail,
         usesTwinfield,
+        twinfieldConnectionType,
+        twinfieldConnectionTypeWithIdAndName,
+        twinfieldHasRefreshToken,
+        twinfieldRedirectUri,
         twinfieldUsername,
+        twinfieldClientId,
+        twinfieldClientSecret,
         twinfieldOrganizationCode,
         twinfieldOfficeCode,
         dateSyncTwinfieldContacts,
@@ -137,50 +143,99 @@ const AdministrationDetailsFormGeneralView = props => {
 
                     <div className="row">
                         <ViewText label={'Gebruikt Twinfield'} value={usesTwinfield ? 'Ja' : 'Nee'} />
+                        {usesTwinfield == true && (
+                            <ViewText
+                                label={'API connection type'}
+                                value={
+                                    twinfieldConnectionTypeWithIdAndName
+                                        ? twinfieldConnectionTypeWithIdAndName.name
+                                        : ''
+                                }
+                            />
+                        )}
                     </div>
 
                     {usesTwinfield == true && (
-                        <div className="row">
-                            <ViewText label={'Gebruikersnaam'} value={twinfieldUsername} />
-                            <ViewText label={'Wachtwoord'} value="**********" />
-                        </div>
-                    )}
+                        <React.Fragment>
+                            <div className="row">
+                                <ViewText label={'Omgeving'} value={twinfieldOrganizationCode} />
+                                <ViewText label={'Code'} value={twinfieldOfficeCode} />
+                            </div>
 
-                    {usesTwinfield == true && (
-                        <div className="row">
-                            <ViewText label={'Omgeving'} value={twinfieldOrganizationCode} />
-                            <ViewText label={'Code'} value={twinfieldOfficeCode} />
-                        </div>
-                    )}
+                            {twinfieldConnectionType === 'webservice' && (
+                                <div className="row">
+                                    <ViewText label={'Gebruikersnaam'} value={twinfieldUsername} />
+                                    <ViewText label={'Wachtwoord'} value="**********" />
+                                </div>
+                            )}
 
-                    {usesTwinfield == true && (
-                        <div className="row">
-                            <ViewText
-                                label={
-                                    <span>
-                                        Synchroniseer contacten vanaf
-                                        <br />
-                                        <small style={{ color: '#ccc', fontWeight: 'normal' }}>
-                                            Nota aanmaakdatum vanaf wanneer contacten initieel gemaakt worden in
-                                            Twinfield
-                                        </small>
-                                    </span>
-                                }
-                                value={dateSyncTwinfieldContacts ? moment(dateSyncTwinfieldContacts).format('L') : ''}
-                            />
-                            <ViewText
-                                label={
-                                    <span>
-                                        Synchroniseer betalingen vanaf
-                                        <br />
-                                        <small style={{ color: '#ccc', fontWeight: 'normal' }}>
-                                            Nota aanmaakdatum vanaf wanneer betalingen opgehaald worden uit Twinfield
-                                        </small>
-                                    </span>
-                                }
-                                value={dateSyncTwinfieldPayments ? moment(dateSyncTwinfieldPayments).format('L') : ''}
-                            />
-                        </div>
+                            {twinfieldConnectionType === 'openid' && (
+                                <React.Fragment>
+                                    <div className="row">
+                                        <ViewText label={'Client Id'} value={twinfieldClientId} />
+                                        <ViewText label={'Client Secret'} value="**********" />
+                                    </div>
+
+                                    <div className="row">
+                                        <ViewText label={'Heeft refresh token?'} value={twinfieldHasRefreshToken} />
+                                        {twinfieldHasRefreshToken === 'Nee' && (
+                                            <ViewText
+                                                className={'col-sm-6 form-group'}
+                                                label="Haal nieuwe refresh token op"
+                                                name={'twinfieldRedirectUri'}
+                                                value={
+                                                    <span>
+                                                        <a
+                                                            href={
+                                                                twinfieldRedirectUri +
+                                                                '?administrationId=' +
+                                                                props.administrationDetails.id
+                                                            }
+                                                            className={'link-underline'}
+                                                        >
+                                                            {twinfieldRedirectUri}
+                                                        </a>
+                                                    </span>
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                </React.Fragment>
+                            )}
+
+                            <div className="row">
+                                <ViewText
+                                    label={
+                                        <span>
+                                            Synchroniseer contacten vanaf
+                                            <br />
+                                            <small style={{ color: '#ccc', fontWeight: 'normal' }}>
+                                                Nota aanmaakdatum vanaf wanneer contacten initieel gemaakt worden in
+                                                Twinfield
+                                            </small>
+                                        </span>
+                                    }
+                                    value={
+                                        dateSyncTwinfieldContacts ? moment(dateSyncTwinfieldContacts).format('L') : ''
+                                    }
+                                />
+                                <ViewText
+                                    label={
+                                        <span>
+                                            Synchroniseer betalingen vanaf
+                                            <br />
+                                            <small style={{ color: '#ccc', fontWeight: 'normal' }}>
+                                                Nota aanmaakdatum vanaf wanneer betalingen opgehaald worden uit
+                                                Twinfield
+                                            </small>
+                                        </span>
+                                    }
+                                    value={
+                                        dateSyncTwinfieldPayments ? moment(dateSyncTwinfieldPayments).format('L') : ''
+                                    }
+                                />
+                            </div>
+                        </React.Fragment>
                     )}
                 </PanelBody>
             </Panel>

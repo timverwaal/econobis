@@ -10,6 +10,7 @@ use App\Eco\Order\Order;
 use App\Eco\PaymentInvoice\PaymentInvoice;
 use App\Eco\Product\Product;
 use App\Eco\Project\Project;
+use App\Eco\Twinfield\TwinfieldConnectionTypeWithIdAndName;
 use App\Eco\Twinfield\TwinfieldCustomerNumber;
 use App\Eco\User\User;
 use App\Http\Traits\Encryptable;
@@ -26,7 +27,8 @@ class Administration extends Model
 
     protected $encryptable = [
         'IBAN',
-        'twinfield_password'
+        'twinfield_password',
+        'twinfield_client_secret'
     ];
 
     //Per administratie heeft de contact een ander twinfield nummer
@@ -34,6 +36,14 @@ class Administration extends Model
     {
         return $this->hasMany(TwinfieldcustomerNumber::class);
     }
+
+    public function getTwinfieldConnectionTypeWithIdAndName()
+    {
+        if(!$this->twinfield_connection_type) return null;
+
+        return TwinfieldConnectionTypeWithIdAndName::get($this->twinfield_connection_type);
+    }
+
 
     public function users()
     {

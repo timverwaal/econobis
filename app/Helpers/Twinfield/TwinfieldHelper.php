@@ -10,16 +10,21 @@ namespace App\Helpers\Twinfield;
 
 
 use App\Eco\Administration\Administration;
+use App\Eco\Twinfield\TwinfieldConnectionTypeWithIdAndName;
 use Illuminate\Support\Facades\Log;
 use PhpTwinfield\ApiConnectors\OfficeApiConnector;
 use PhpTwinfield\Exception;
 use PhpTwinfield\Office;
+use PhpTwinfield\Secure\OpenIdConnectAuthentication;
+use PhpTwinfield\Secure\Provider\OAuthProvider;
 use PhpTwinfield\Secure\WebservicesAuthentication;
 
 class TwinfieldHelper
 {
     private $connection;
+    private $administration;
     private $office;
+    private $redirectUri;
 
     /**
      * TwinfieldHelper constructor.
@@ -28,8 +33,26 @@ class TwinfieldHelper
      */
     public function __construct(Administration $administration)
     {
-        $this->connection = new WebservicesAuthentication($administration->twinfield_username, $administration->twinfield_password, $administration->twinfield_organization_code);
+        $this->administration = $administration;
         $this->office = Office::fromCode($administration->twinfield_office_code);
+        $this->redirectUri = \Config::get('app.url_api') . '/twinfield';
+
+        if ($administration->twinfield_connection_type === "openid") {
+
+            $provider = new OAuthProvider([
+                'clientId'                => $administration ? $administration->twinfield_client_id : '',    // The client ID assigned to you by the provider
+                'clientSecret'            => $administration ? $administration->twinfield_client_secret : '',   // The client password assigned to you by the provider
+                'redirectUri'             => $this->redirectUri,
+            ]);
+            if(!empty($administration->twinfield_refresh_token)){
+                $this->connection = new OpenIdConnectAuthentication($provider, $administration->twinfield_refresh_token, $this->office);
+            }else{
+                $this->connection = null;
+            }
+
+        }else{
+            $this->connection = new WebservicesAuthentication($administration->twinfield_username, $administration->twinfield_password, $administration->twinfield_organization_code);
+        }
     }
 
 
@@ -38,6 +61,10 @@ class TwinfieldHelper
      */
     public function testConnection()
     {
+        if($this->administration->twinfield_connection_type === TwinfieldConnectionTypeWithIdAndName::OPENID && empty($this->administration->twinfield_refresh_token)){
+            return false;
+        }
+
         $officeApiConnector = new OfficeApiConnector($this->connection);
 
         $result = true;

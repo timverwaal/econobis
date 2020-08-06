@@ -11,6 +11,8 @@
 |
 */
 
+Route::get('/twinfield', 'Api\Twinfield\TwinfieldController@twinfield');
+
 // Welcome
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 

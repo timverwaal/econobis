@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Administration;
 
 use App\Http\Resources\EmailTemplate\FullEmailTemplate;
+use App\Http\Resources\EnumWithIdAndName\FullEnumWithIdAndName;
 use App\Http\Resources\GenericResource;
 use App\Http\Resources\Product\FullProduct;
 use App\Http\Resources\User\FullUser;
@@ -101,8 +102,16 @@ class FullAdministration extends Resource
                 'canCreatePaymentInvoices' => $this->can_create_payment_invoices,
 
                 'usesTwinfield' => $this->uses_twinfield,
+                'twinfieldConnectionType' => $this->twinfield_connection_type,
+                'twinfieldConnectionTypeWithIdAndName' => FullEnumWithIdAndName::make($this->getTwinfieldConnectionTypeWithIdAndName()),
+                'twinfieldHasRefreshToken' => (!empty($this->twinfield_refresh_token) ? 'Ja' : 'Nee'),
+                'twinfieldRedirectUri' => $this->uses_twinfield ? (\Config::get('app.url_api') . '/twinfield') : '',
                 'twinfieldUsername' => $this->twinfield_username,
+//                'twinfieldPassword' => $this->twinfield_password,
                 'twinfieldPassword' => '',
+                'twinfieldClientId' => $this->twinfield_client_id,
+//                'twinfieldClientSecret' => $this->twinfield_client_secret,
+                'twinfieldClientSecret' => '',
                 'twinfieldOrganizationCode' => $this->twinfield_organization_code,
                 'twinfieldOfficeCode' => $this->twinfield_office_code,
                 'twinfieldIsValid' => $this->twinfield_is_valid,

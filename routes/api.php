@@ -26,6 +26,8 @@ Route::namespace('Api')
 
         Route::get('/jobs', 'Job\JobController@getLastJobs');
 
+        Route::get('/twinfield', 'Twinfield\TwinfieldController@twinfield');
+
         Route::get('/me', 'User\UserController@me');
 
         Route::get('/system-data', 'SystemData\SystemDataController@get');
@@ -229,9 +231,11 @@ Route::namespace('Api')
         Route::get('email/email-attachment/{emailAttachment}/download', 'Email\EmailController@downloadEmailAttachment');
         Route::post('email/email-attachment/{email}/store', 'Email\EmailController@storeEmailAttachment');
         Route::post('email/email-attachment/{emailAttachment}/delete', 'Email\EmailController@deleteEmailAttachment');
-        Route::post('email/send/{mailbox}', 'Email\EmailController@send');
         Route::post('email/concept/{mailbox}/store', 'Email\EmailController@storeConcept');
+        Route::post('email/concept/{mailbox}/{email}/store2', 'Email\EmailController@storeConcept2');
+        Route::post('email/send/{mailbox}/{email}', 'Email\EmailController@send');
         Route::post('email/concept/{email}/update', 'Email\EmailController@updateConcept');
+        Route::post('email/concept/{email}/update2', 'Email\EmailController@updateConcept2');
         Route::post('email/concept/{email}/send', 'Email\EmailController@sendConcept');
         Route::post('email/{email}/status/{emailStatusId}', 'Email\EmailController@setEmailStatus');
 

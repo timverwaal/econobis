@@ -91,8 +91,12 @@ class AdministrationController extends ApiController
             ->integer('emailTemplateReminderId')->validate('nullable|exists:email_templates,id')->onEmpty(null)->whenMissing(null)->alias('email_template_reminder_id')->next()
             ->integer('emailTemplateExhortationId')->validate('nullable|exists:email_templates,id')->onEmpty(null)->whenMissing(null)->alias('email_template_exhortation_id')->next()
             ->integer('mailboxId')->validate('nullable|exists:mailboxes,id')->onEmpty(null)->whenMissing(null)->alias('mailbox_id')->next()
+            ->string('twinfieldConnectionType')->whenMissing(null)->onEmpty(null)->alias('twinfield_connection_type')->next()
+            ->string('twinfieldRefreshToken')->whenMissing(null)->onEmpty(null)->alias('twinfield_refresh_token')->next()
             ->string('twinfieldUsername')->whenMissing(null)->onEmpty(null)->alias('twinfield_username')->next()
             ->string('twinfieldPassword')->whenMissing(null)->onEmpty(null)->alias('twinfield_password')->next()
+            ->string('twinfieldClientId')->whenMissing(null)->onEmpty(null)->alias('twinfield_client_id')->next()
+            ->string('twinfieldClientSecret')->whenMissing(null)->onEmpty(null)->alias('twinfield_client_secret')->next()
             ->string('twinfieldOrganizationCode')->whenMissing(null)->onEmpty(null)->alias('twinfield_organization_code')->next()
             ->string('twinfieldOfficeCode')->whenMissing(null)->onEmpty(null)->alias('twinfield_office_code')->next()
             ->string('dateSyncTwinfieldContacts')->whenMissing(null)->onEmpty(null)->alias('date_sync_twinfield_contacts')->next()
@@ -128,7 +132,13 @@ class AdministrationController extends ApiController
 
         if($administration->uses_twinfield) {
             $twinfieldHelper = new TwinfieldHelper($administration);
-            $administration->twinfield_is_valid = $twinfieldHelper->testConnection();
+            try {
+                $administration->twinfield_is_valid = $twinfieldHelper->testConnection();
+            }
+            catch(\Exception $e){
+                Log::error($e->getMessage());
+                $administration->twinfield_is_valid = 0;
+            }
         }else{
             $administration->twinfield_is_valid = 0;
         }
@@ -175,8 +185,11 @@ class AdministrationController extends ApiController
             ->integer('emailTemplateReminderId')->validate('nullable|exists:email_templates,id')->onEmpty(null)->whenMissing(null)->alias('email_template_reminder_id')->next()
             ->integer('emailTemplateExhortationId')->validate('nullable|exists:email_templates,id')->onEmpty(null)->whenMissing(null)->alias('email_template_exhortation_id')->next()
             ->integer('mailboxId')->validate('nullable|exists:mailboxes,id')->onEmpty(null)->whenMissing(null)->alias('mailbox_id')->next()
+            ->string('twinfieldConnectionType')->whenMissing(null)->onEmpty(null)->alias('twinfield_connection_type')->next()
             ->string('twinfieldUsername')->whenMissing(null)->onEmpty(null)->alias('twinfield_username')->next()
             ->string('twinfieldPassword')->whenMissing($administration->twinfield_password)->onEmpty($administration->twinfield_password)->alias('twinfield_password')->next()
+            ->string('twinfieldClientId')->whenMissing(null)->onEmpty(null)->alias('twinfield_client_id')->next()
+            ->string('twinfieldClientSecret')->whenMissing($administration->twinfield_client_secret)->onEmpty($administration->twinfield_client_secret)->alias('twinfield_client_secret')->next()
             ->string('twinfieldOrganizationCode')->whenMissing(null)->onEmpty(null)->alias('twinfield_organization_code')->next()
             ->string('twinfieldOfficeCode')->whenMissing(null)->onEmpty(null)->alias('twinfield_office_code')->next()
             ->string('dateSyncTwinfieldContacts')->whenMissing(null)->onEmpty(null)->alias('date_sync_twinfield_contacts')->next()
@@ -212,7 +225,13 @@ class AdministrationController extends ApiController
 
         if($administration->uses_twinfield) {
             $twinfieldHelper = new TwinfieldHelper($administration);
-            $administration->twinfield_is_valid = $twinfieldHelper->testConnection();
+            try {
+                $administration->twinfield_is_valid = $twinfieldHelper->testConnection();
+            }
+            catch(\Exception $e){
+                Log::error($e->getMessage());
+                $administration->twinfield_is_valid = 0;
+            }
         }else{
             $administration->twinfield_is_valid = 0;
         }

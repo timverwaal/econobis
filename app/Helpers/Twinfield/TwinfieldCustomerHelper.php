@@ -24,32 +24,53 @@ use PhpTwinfield\Enums\Services;
 use PhpTwinfield\Exception as PhpTwinfieldException;
 use PhpTwinfield\Exception;
 use PhpTwinfield\Office;
+use PhpTwinfield\Secure\OpenIdConnectAuthentication;
+use PhpTwinfield\Secure\Provider\OAuthProvider;
 use PhpTwinfield\Secure\WebservicesAuthentication;
 use PhpTwinfield\Services\FinderService;
 
 class TwinfieldCustomerHelper
 {
     private $connection;
-    private $office;
     private $administration;
+    private $office;
+    private $redirectUri;
     private $customerApiConnector;
 
     /**
      * TwinfieldCustomerHelper constructor.
      *
-     * @param Administration $administration, WebservicesAuthentication $webservicesAuthentication
+     * @param Administration $administration, $twinFieldConnection
      */
-    public function __construct(Administration $administration, $webservicesAuthentication)
+    public function __construct(Administration $administration, $twinFieldConnection)
     {
-        //Indien we al een connection hebben gemaakt (bijv. vanuit TwinfieldSalsTransaction), dan gebruiken we die, anders nieuwe maken.
-        if($webservicesAuthentication)
-        {
-            $this->connection = $webservicesAuthentication;
-        }else{
-            $this->connection = new WebservicesAuthentication($administration->twinfield_username, $administration->twinfield_password, $administration->twinfield_organization_code);
-        }
-        $this->office = Office::fromCode($administration->twinfield_office_code);
         $this->administration = $administration;
+        $this->office = Office::fromCode($administration->twinfield_office_code);
+        $this->redirectUri = \Config::get('app.url_api') . '/twinfield';
+
+        //Indien we al een connection hebben gemaakt (bijv. vanuit TwinfieldSalsTransaction), dan gebruiken we die, anders nieuwe maken.
+        if($twinFieldConnection)
+        {
+            $this->connection = $twinFieldConnection;
+        }else{
+            if ($administration->twinfield_connection_type === "openid") {
+
+                $provider = new OAuthProvider([
+                    'clientId'                => $administration ? $administration->twinfield_client_id : '',    // The client ID assigned to you by the provider
+                    'clientSecret'            => $administration ? $administration->twinfield_client_secret : '',   // The client password assigned to you by the provider
+                    'redirectUri'             => $this->redirectUri,
+                ]);
+                if(!empty($administration->twinfield_refresh_token)){
+                    $this->connection = new OpenIdConnectAuthentication($provider, $administration->twinfield_refresh_token, $this->office);
+                }else{
+                    $this->connection = null;
+                }
+
+            }else{
+                $this->connection = new WebservicesAuthentication($administration->twinfield_username, $administration->twinfield_password, $administration->twinfield_organization_code);
+            }
+        }
+
         $this->customerApiConnector = new CustomerApiConnector($this->connection);
     }
 
