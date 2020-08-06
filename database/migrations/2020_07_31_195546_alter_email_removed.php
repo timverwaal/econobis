@@ -14,13 +14,13 @@ class AlterEmailRemoved extends Migration
      */
     public function up()
     {
-        Schema::table('emails', function (Blueprint $table) {
-            $table->unsignedInteger('removed_by_id')->nullable()->default(null)->after('closed_by_id');
-            $table->foreign('removed_by_id')
-                ->references('id')->on('users')
-                ->onDelete('restrict');
-            $table->dateTime('date_removed')->nullable()->default(null)->after('closed_by_id');
-        });
+//        Schema::table('emails', function (Blueprint $table) {
+//            $table->unsignedInteger('removed_by_id')->nullable()->default(null)->after('closed_by_id');
+//            $table->foreign('removed_by_id')
+//                ->references('id')->on('users')
+//                ->onDelete('restrict');
+//            $table->dateTime('date_removed')->nullable()->default(null)->after('closed_by_id');
+//        });
 
 //        $emails = Email::where('folder', 'removed')->get();
 //        foreach ($emails as $email){
