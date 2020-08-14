@@ -14,6 +14,7 @@ use App\Eco\Email\EmailAttachment;
 use App\Eco\EmailAddress\EmailAddress;
 use Carbon\Carbon;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Storage;
 
@@ -37,7 +38,7 @@ class MailFetcherGmail
     public function fetchNew()
     {
         echo "Nieuwe test! <br />";
-        echo "Mailbox" . $this->mailbox->id . "<br />";
+        echo "Mailbox: " . $this->mailbox->id . "<br />";
 
         $emails = LaravelGmail::message()->unread()->preload()->all();
         foreach ( $emails as $email ) {
@@ -91,8 +92,8 @@ class MailFetcherGmail
     private function fetchEmail($mailId)
     {
         $emailData = LaravelGmail::message()->get( $mailId );
-        Log::info("Labels :" . $emailData->getLabels);
-
+//        echo "Id: " . $emailData->getId() . "<br />";
+//        echo "Labels :" . implode( "<br / >", $emailData->getLabels() );
         try {
             $dateSent = Carbon::parse( $emailData->getDate() ) ;
         } catch(\Exception $ex) {
@@ -121,22 +122,33 @@ class MailFetcherGmail
             $subject = substr($emailData->textHtml, 0, 249);
         }
 
+//echo "DeliveredTo : " . $emailData->getDeliveredTo() . "<br / >";
+//echo "To : <br / >";
+//$emails = implode(", ", Arr::pluck($emailData->getTo(), 'email') );
+//print_r($emails);
+//echo "<br / >";
+//echo "Cc : <br / >";
+//$cc = implode(", ", Arr::pluck($emailData->getCc(), 'email') );
+//print_r($cc);
+//echo "<br / >";
+//die();
+
         $email = new Email([
             'mailbox_id' => $this->mailbox->id,
             'from' => $emailData->getFromEmail(),
-            'to' => array_keys($emailData->getTo()),
-//            'cc' => array_keys($emailData->cc),
-//            'bcc' => array_keys($emailData->bcc),
+            'to' => Arr::pluck($emailData->getTo(), 'email'),
+            'cc' => Arr::pluck($emailData->getCc(), 'email'),
+            'bcc' => Arr::pluck($emailData->getBcc(), 'email'),
             'subject' => $subject,
             'html_body' => $textHtml,
             'date_sent' => $dateSent,
             'folder' => 'inbox',
-            'imap_id' => $mailId,
-            'message_id' => '',
+            'imap_id' => 0,
+            'message_id' => $mailId,
             'status' => 'unread'
         ]);
-        print_r($email); die();
-//        $email->save();
+//        print_r($email); die();
+        $email->save();
 
         //if from email exists in any of the email addresses make a pivot record.
 
@@ -166,9 +178,9 @@ class MailFetcherGmail
         foreach ($mailboxIgnores as $ignore){
             switch ($ignore->type_id) {
                 case 'e-mail':
-                   if($ignore->value === $email->from){
-                       return false;
-                   }
+                    if($ignore->value === $email->from){
+                        return false;
+                    }
                     break;
                 case 'domain':
                     $domain = preg_replace( '!^.+?([^@]+)$!', '$1', $email->from);
@@ -182,7 +194,7 @@ class MailFetcherGmail
         // Link contact from email to address
         if($email->mailbox->link_contact_from_email_to_address) {
             $emailAddressesIds = EmailAddress::where('email', $email->to)->pluck('contact_id')->toArray();
-        // Link contact from email from address
+            // Link contact from email from address
         } else {
             $emailAddressesIds = EmailAddress::where('email', $email->from)->pluck('contact_id')->toArray();
         }
