@@ -14,6 +14,7 @@
 Route::get('/twinfield', 'Api\Twinfield\TwinfieldController@twinfield');
 
 // Welcome
+use App\Eco\Mailbox\MailFetcher;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 use Dacastro4\LaravelGmail\LaravelGmailClass;
 
@@ -38,17 +39,20 @@ Route::get('/oauth/gmail/checkuser', function (){
 });
 
 Route::get('/oauth/gmail/fetch-mails', function (){
-    $messages = LaravelGmail::message()->unread()->preload()->all();
-    foreach ( $messages as $message ) {
-        echo "User: " . LaravelGmail::user() . "<br />";
-        echo "Id: " . $message->getId() . "<br />";
-        echo "Internal date : " . $message->getInternalDate() . "<br />";
-        echo "Date: " . $message->getDate() . "<br />";
-        echo "Subject: " . $message->getSubject() . "<br />";
-        echo "Tekst:" . "<br />";
-        echo $message->getHtmlBody();
-        echo "<br />";
-    }
+//    $messages = LaravelGmail::message()->unread()->preload()->all();
+//    foreach ( $messages as $message ) {
+//        echo "User: " . LaravelGmail::user() . "<br />";
+//        echo "Id: " . $message->getId() . "<br />";
+//        echo "Internal date : " . $message->getInternalDate() . "<br />";
+//        echo "Date: " . $message->getDate() . "<br />";
+//        echo "Subject: " . $message->getSubject() . "<br />";
+//        echo "Tekst:" . "<br />";
+//        echo $message->getHtmlBody();
+//        echo "<br />";
+//    }
+    $mailFetcherGmail = new MailFetcherGmail();
+    $mailFetcherGmail->fetchNew();
+
 });
 
 Route::get('/oauth/gmail/fetch-mails/{user}', function ($user){
