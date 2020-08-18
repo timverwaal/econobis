@@ -73,7 +73,7 @@ class MailFetcherGmail
      */
     private function getStorageDir()
     {
-        return DIRECTORY_SEPARATOR . 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' ;
+        return $this->getStorageRootDir() . DIRECTORY_SEPARATOR . 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' ;
     }
 
     /**
@@ -87,10 +87,10 @@ class MailFetcherGmail
     /**
      * @return string
      */
-//    private function getStorageRootDir()
-//    {
-//        return Storage::disk('mail_attachments')->getDriver()->getAdapter()->getPathPrefix();
-//    }
+    private function getStorageRootDir()
+    {
+        return Storage::disk('mail_attachments')->getDriver()->getAdapter()->getPathPrefix();
+    }
 
     private function fetchEmail($mailId)
     {
@@ -166,7 +166,7 @@ class MailFetcherGmail
                 echo "Storagename : " . $this->getStorageDir() . "<br / >";
                 echo "Filename : " . $attachment->getFileName() . "<br / >";
 //echo "Prefix name : " . $this->getAttachmentDBName() . "<br / >";
-                $attachment->saveAttachmentTo($path = $this->getStorageDir(), $filename = null, $disk = 'mail_attachments');
+                $attachment->saveAttachmentTo($path = DIRECTORY_SEPARATOR . $this->getAttachmentDBName(), $filename = null, $disk = 'mail_attachments');
                 $name = substr($attachment->getFileName(), strrpos($attachment->getFileName(), DIRECTORY_SEPARATOR) + 1);
                 echo "Name: " . $name . "<br / >";
                 $filename = $this->getAttachmentDBName() . $name;
