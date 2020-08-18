@@ -83,7 +83,7 @@ return [
 	|
 	*/
 
-	'allow_multiple_credentials' => env('GOOGLE_ALLOW_MULTIPLE_CREDENTIALS', false),
+	'allow_multiple_credentials' => env('GOOGLE_ALLOW_MULTIPLE_CREDENTIALS', true),
 
 	/*
 	|--------------------------------------------------------------------------

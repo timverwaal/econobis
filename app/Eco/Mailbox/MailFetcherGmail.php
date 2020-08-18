@@ -37,18 +37,21 @@ class MailFetcherGmail
 
     public function fetchNew()
     {
-        echo "Nieuwe test! <br />";
+        echo "Nieuwe test 2! <br />";
         echo "Mailbox: " . $this->mailbox->id . "<br />";
 
         $emails = LaravelGmail::message()->unread()->preload()->all();
+        $dateTime = Carbon::now();
+
         foreach ( $emails as $email ) {
+            echo "Nieuwe email! <br />";
             $this->fetchEmail($email->getId());
-            $email->markAsRead();
+//            $email->markAsRead();
         }
 
-//        $this->mailbox->date_last_fetched = $dateTime;
+        $this->mailbox->date_last_fetched = $dateTime;
 //        $this->mailbox->imap_id_last_fetched = $imapIdLastFetched;
-//        $this->mailbox->save();
+        $this->mailbox->save();
 
     }
 
@@ -70,29 +73,29 @@ class MailFetcherGmail
      */
     private function getStorageDir()
     {
-        return $this->getStorageRootDir() . DIRECTORY_SEPARATOR . 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' ;
+        return DIRECTORY_SEPARATOR . 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' ;
     }
 
     /**
      * @return string
      */
-//    private function getAttachmentDBName()
-//    {
-//        return 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' . DIRECTORY_SEPARATOR;
-//    }
-
-    /**
-     * @return string
-     */
-    private function getStorageRootDir()
+    private function getAttachmentDBName()
     {
-        return Storage::disk('mail_attachments')->getDriver()->getAdapter()->getPathPrefix();
+        return 'mailbox_' . $this->mailbox->id . DIRECTORY_SEPARATOR . 'inbox' . DIRECTORY_SEPARATOR;
     }
+
+    /**
+     * @return string
+     */
+//    private function getStorageRootDir()
+//    {
+//        return Storage::disk('mail_attachments')->getDriver()->getAdapter()->getPathPrefix();
+//    }
 
     private function fetchEmail($mailId)
     {
         $emailData = LaravelGmail::message()->get( $mailId );
-//        echo "Id: " . $emailData->getId() . "<br />";
+        echo "Id: " . $emailData->getId() . "<br />";
 //        echo "Labels :" . implode( "<br / >", $emailData->getLabels() );
         try {
             $dateSent = Carbon::parse( $emailData->getDate() ) ;
@@ -101,6 +104,8 @@ class MailFetcherGmail
             echo "GMAIL - Failed to retrieve date sent from email: " . $ex->getMessage();
             die();
         }
+
+        echo "So far so good! <br />";
 
         $textHtml = $emailData->getHtmlBody();
         $textHtml = $textHtml?: '';
@@ -152,7 +157,34 @@ class MailFetcherGmail
 
         //if from email exists in any of the email addresses make a pivot record.
 
-//        $this->addRelationToContacts($email);
+        $this->addRelationToContacts($email);
+
+        echo "Heeft bijlage(n): " . $emailData->hasAttachments() . "<br />";
+        if($emailData->hasAttachments()){
+            foreach ($emailData->getAttachments() as $attachment){
+                echo "Email id: " . $email->id . "<br / >";
+                echo "Storagename : " . $this->getStorageDir() . "<br / >";
+                echo "Filename : " . $attachment->getFileName() . "<br / >";
+//echo "Prefix name : " . $this->getAttachmentDBName() . "<br / >";
+                $attachment->saveAttachmentTo($path = $this->getStorageDir(), $filename = null, $disk = 'mail_attachments');
+                $name = substr($attachment->getFileName(), strrpos($attachment->getFileName(), DIRECTORY_SEPARATOR) + 1);
+                echo "Name: " . $name . "<br / >";
+                $filename = $this->getAttachmentDBName() . $name;
+                echo "Filename 2: " . $filename . "<br / >";
+//echo $attachment;
+                echo "Filename eigen: " . $filename . "<br / >";
+                echo "Filename gmail: " . $attachment->getFileName() . "<br / >";
+
+                $emailAttachment = new EmailAttachment([
+                    'filename' => $filename,
+                    'name' => $attachment->getFileName(),
+                    'email_id' => $email->id,
+                ]);
+                $emailAttachment->save();
+
+            }
+        }
+
 //
 //        foreach ($emailData->getAttachments() as $attachment){
 //            $name = substr($attachment->filePath, strrpos($attachment->filePath, DIRECTORY_SEPARATOR) + 1);
