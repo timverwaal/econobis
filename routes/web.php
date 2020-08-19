@@ -15,20 +15,24 @@ Route::get('/twinfield', 'Api\Twinfield\TwinfieldController@twinfield');
 
 // Welcome
 use App\Eco\Mailbox\MailFetcherGmail;
+use App\Http\Controllers\Api\Mailbox\GmailController;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
-use Dacastro4\LaravelGmail\LaravelGmailClass;
 
 Route::get('/', 'HomeController@welcome');
 
-Route::get('/oauth/gmail', function (){
-    return LaravelGmail::redirect();
-//    $config['gmail.client_id'] = "838026575400-vk5jfv2e8s9fhggm9u7kls2cnfsr61j6.apps.googleusercontent.com";
-//    $config['gmail.client_secret'] = "-0RAc-2TTSavNtaW98RkgvXz";
-//    $config['gmail.redirect_url'] = "https://testeconobis.econobis.nl/oauth/gmail/callback";
-//    $gmail = new LaravelGmailClass($config);
-//    return $gmail->redirect();
+//Route::get('/oauth/gmail', function (){
+//    return LaravelGmail::redirect();
+//});
+//Route::get('/oauth/gmail', 'Api\Mailbox\GmailController@oauthGmail');
+
+Route::get('/oauth/gmail/mailbox/{mailboxId}', function ($mailboxId){
+
+    $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
+    $gmailController = new GmailController($mailbox);
+    return $gmailController->oauthGmail();
 
 });
+
 
 Route::get('/oauth/gmail/callback', function (){
     LaravelGmail::makeToken();

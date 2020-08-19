@@ -24,7 +24,7 @@ class MailFetcherGmail
     /**
      * @var Mailbox
      */
-//    private $mailbox;
+    private $mailbox;
     private $fetchedEmails = [];
 
     public function __construct(Mailbox $mailbox)
@@ -37,14 +37,10 @@ class MailFetcherGmail
 
     public function fetchNew()
     {
-        echo "Nieuwe test 2! <br />";
-        echo "Mailbox: " . $this->mailbox->id . "<br />";
-
         $emails = LaravelGmail::message()->unread()->preload()->all();
         $dateTime = Carbon::now();
 
         foreach ( $emails as $email ) {
-            echo "Nieuwe email! <br />";
             $this->fetchEmail($email->getId());
 //            $email->markAsRead();
         }
@@ -96,7 +92,20 @@ class MailFetcherGmail
     {
         $emailData = LaravelGmail::message()->get( $mailId );
         echo "Id: " . $emailData->getId() . "<br />";
-//        echo "Labels :" . implode( "<br / >", $emailData->getLabels() );
+        echo "Labels :" . implode( "<br / >", $emailData->getLabels() );
+//
+//        echo "PlainTextBody:" . "<br />";
+//        echo $emailData->getPlainTextBody();
+//        echo "<br />";
+//
+//        echo "RawPlainTextBody:" . "<br />";
+//        echo $emailData->getRawPlainTextBody();
+//        echo "<br />";
+//
+//        echo "HtmlBody:" . "<br />";
+//        echo $emailData->getHtmlBody();
+//        echo "<br />";
+//
         try {
             $dateSent = Carbon::parse( $emailData->getDate() ) ;
         } catch(\Exception $ex) {
@@ -104,8 +113,6 @@ class MailFetcherGmail
             echo "GMAIL - Failed to retrieve date sent from email: " . $ex->getMessage();
             die();
         }
-
-        echo "So far so good! <br />";
 
         $textHtml = $emailData->getHtmlBody();
         $textHtml = $textHtml?: '';
@@ -127,23 +134,16 @@ class MailFetcherGmail
             $subject = substr($emailData->textHtml, 0, 249);
         }
 
-//echo "DeliveredTo : " . $emailData->getDeliveredTo() . "<br / >";
-//echo "To : <br / >";
-//$emails = implode(", ", Arr::pluck($emailData->getTo(), 'email') );
-//print_r($emails);
-//echo "<br / >";
-//echo "Cc : <br / >";
-//$cc = implode(", ", Arr::pluck($emailData->getCc(), 'email') );
-//print_r($cc);
-//echo "<br / >";
-//die();
+        $to = Arr::pluck($emailData->getTo(), 'email');
+        $cc = Arr::pluck($emailData->getCc(), 'email');
+        $bcc = Arr::pluck($emailData->getBcc(), 'email');
 
         $email = new Email([
             'mailbox_id' => $this->mailbox->id,
             'from' => $emailData->getFromEmail(),
-            'to' => Arr::pluck($emailData->getTo(), 'email'),
-            'cc' => Arr::pluck($emailData->getCc(), 'email'),
-            'bcc' => Arr::pluck($emailData->getBcc(), 'email'),
+            'to' => ($to != [''] ? $to : []),
+            'cc' => ($cc != [''] ? $cc : []),
+            'bcc' => ($bcc != [''] ? $bcc : []),
             'subject' => $subject,
             'html_body' => $textHtml,
             'date_sent' => $dateSent,
@@ -159,21 +159,12 @@ class MailFetcherGmail
 
         $this->addRelationToContacts($email);
 
-        echo "Heeft bijlage(n): " . $emailData->hasAttachments() . "<br />";
         if($emailData->hasAttachments()){
             foreach ($emailData->getAttachments() as $attachment){
-                echo "Email id: " . $email->id . "<br / >";
-                echo "Storagename : " . $this->getStorageDir() . "<br / >";
-                echo "Filename : " . $attachment->getFileName() . "<br / >";
-//echo "Prefix name : " . $this->getAttachmentDBName() . "<br / >";
-                $attachment->saveAttachmentTo($path = DIRECTORY_SEPARATOR . $this->getAttachmentDBName(), $filename = null, $disk = 'mail_attachments');
-                $name = substr($attachment->getFileName(), strrpos($attachment->getFileName(), DIRECTORY_SEPARATOR) + 1);
-                echo "Name: " . $name . "<br / >";
-                $filename = $this->getAttachmentDBName() . $name;
-                echo "Filename 2: " . $filename . "<br / >";
-//echo $attachment;
-                echo "Filename eigen: " . $filename . "<br / >";
-                echo "Filename gmail: " . $attachment->getFileName() . "<br / >";
+                $name = $attachment->getFileName();
+                $fileSysName = \bin2hex(\random_bytes(16)).'.bin';
+                $attachment->saveAttachmentTo($this->getAttachmentDBName(), $fileSysName, $disk = 'mail_attachments');
+                $filename = $this->getAttachmentDBName() . $fileSysName;
 
                 $emailAttachment = new EmailAttachment([
                     'filename' => $filename,
