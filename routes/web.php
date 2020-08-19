@@ -21,10 +21,9 @@ use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 Route::get('/', 'HomeController@welcome');
 
-//Route::get('/oauth/gmail', function (){
-//    return LaravelGmail::redirect();
-//});
-//Route::get('/oauth/gmail', 'Api\Mailbox\GmailController@oauthGmail');
+Route::get('/oauth/gmail', function (){
+    return LaravelGmail::redirect();
+});
 
 Route::get('/oauth/gmail/mailbox/{mailboxId}', function ($mailboxId){
 
