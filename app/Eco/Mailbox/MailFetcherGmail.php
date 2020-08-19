@@ -37,12 +37,18 @@ class MailFetcherGmail
 
     public function fetchNew()
     {
-        $emails = LaravelGmail::message()->unread()->preload()->all();
+        try {
+            $emails = LaravelGmail::message()->unread()->preload()->all();
+        } catch(\Exception $ex) {
+        Log::info("FetchNew melding mailbox " . $this->mailbox->id);
+        Log::info("Melding: " . $ex);
+            return;
+        }
+
         $dateTime = Carbon::now();
 
         foreach ( $emails as $email ) {
             $this->fetchEmail($email->getId());
-//            $email->markAsRead();
         }
 
         $this->mailbox->date_last_fetched = $dateTime;
@@ -91,6 +97,7 @@ class MailFetcherGmail
     private function fetchEmail($mailId)
     {
         $emailData = LaravelGmail::message()->get( $mailId );
+
         echo "Id: " . $emailData->getId() . "<br />";
         echo "Labels :" . implode( "<br / >", $emailData->getLabels() );
 //
@@ -111,10 +118,23 @@ class MailFetcherGmail
         } catch(\Exception $ex) {
             Log::error("GMAIL - Failed to retrieve date sent (" . $emailData->getDate() . ") from email (" . $mailId . ") in mailbox (" . $this->mailbox->id . "). Error: " . $ex->getMessage());
             echo "GMAIL - Failed to retrieve date sent from email: " . $ex->getMessage();
-            die();
+            return;
         }
 
-        $textHtml = $emailData->getHtmlBody();
+        $textHtml = '';
+        try {
+            if ($emailData->getHtmlBody() && !empty($emailData->getHtmlBody())) {
+                $textHtml = $emailData->getHtmlBody();
+            } else {
+                if ($emailData->getPlainTextBody() && !empty($emailData->getPlainTextBody())) {
+                    $textHtml = nl2br($emailData->getPlainTextBody);
+                }
+            }
+        } catch(\Exception $ex) {
+            Log::error("Failed to retrieve HtmlBody or PlainTextBody from email (" . $mailId . ") in mailbox (" . $this->mailbox->id . "). Error: " . $ex->getMessage());
+            return;
+        }
+
         $textHtml = $textHtml?: '';
 
         // when encoding isn't UTF-8 encode texthtml to utf8.
@@ -154,6 +174,7 @@ class MailFetcherGmail
         ]);
 //        print_r($email); die();
         $email->save();
+        $email->markAsRead();
 
         //if from email exists in any of the email addresses make a pivot record.
 

@@ -16,6 +16,7 @@ Route::get('/twinfield', 'Api\Twinfield\TwinfieldController@twinfield');
 // Welcome
 use App\Eco\Mailbox\MailFetcherGmail;
 use App\Http\Controllers\Api\Mailbox\GmailController;
+use Carbon\Carbon;
 use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 Route::get('/', 'HomeController@welcome');
@@ -64,20 +65,41 @@ Route::get('/oauth/gmail/fetch-mails-user/{user}', function ($user){
     }
 });
 
-Route::get('/oauth/gmail/fetch-mails-preload', function (){
-    echo "start";
-    $messages = LaravelGmail::message()->unread()->preload()->all();
-    echo "messages opgehaald?";
-    foreach ( $messages as $message ) {
-        echo "User: " . LaravelGmail::user() . "<br />";
-        echo "Id: " . $message->getId() . "<br />";
-        echo "Internal date : " . $message->getInternalDate() . "<br />";
-        echo "Date: " . $message->getDate() . "<br />";
-        echo "Subject: " . $message->getSubject() . "<br />";
-        echo "Bijlage(n): " . ($message->hasAttachments() ? 'Ja' : 'Nee' ) . "<br />";
-        echo "Tekst:" . "<br />";
-        echo $message->getHtmlBody();
-        echo "<br />";
+Route::get('/oauth/gmail/fetch-mails-unread', function (){
+    try{
+        $messages = LaravelGmail::message()->unread()->preload()->all();
+        foreach ( $messages as $message ) {
+            echo "User: " . LaravelGmail::user() . "<br />";
+            echo "Id: " . $message->getId() . "<br />";
+            echo "Internal date : " . $message->getInternalDate() . "<br />";
+            echo "Date: " . $message->getDate() . "<br />";
+            echo "Subject: " . $message->getSubject() . "<br />";
+            echo "Bijlage(n): " . ($message->hasAttachments() ? 'Ja' : 'Nee' ) . "<br />";
+            echo "Tekst:" . "<br />";
+            echo $message->getHtmlBody();
+            echo "<br />";
+        }
+    } catch (\Exception $exception) {
+        echo "fetch unread failed: " . $exception;
+    }
+
+});
+Route::get('/oauth/gmail/fetch-mails-after', function (){
+    try{
+        $messages = LaravelGmail::message()->after(Carbon::yesterday())->preload()->all();
+        foreach ( $messages as $message ) {
+            echo "User: " . LaravelGmail::user() . "<br />";
+            echo "Id: " . $message->getId() . "<br />";
+            echo "Internal date : " . $message->getInternalDate() . "<br />";
+            echo "Date: " . $message->getDate() . "<br />";
+            echo "Subject: " . $message->getSubject() . "<br />";
+            echo "Bijlage(n): " . ($message->hasAttachments() ? 'Ja' : 'Nee' ) . "<br />";
+            echo "Tekst:" . "<br />";
+            echo $message->getHtmlBody();
+            echo "<br />";
+        }
+    } catch (\Exception $exception) {
+        echo "fetch after failed: " . $exception;
     }
 
 });
