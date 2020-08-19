@@ -25,7 +25,7 @@ class GmailController extends Controller
     public function oauthGmail()
     {
 //        return LaravelGmail::redirect();
-//        $config['gmail.project_id'] = $this->mailbox->gmail_project_id;
+        $config['gmail.project_id'] = $this->mailbox->gmail_project_id;
         $config['gmail.client_id'] = $this->mailbox->gmail_client_id;
         $config['gmail.client_secret'] = $this->mailbox->gmail_client_secret;
         $config['gmail.redirect_url'] = $this->mailbox->gmail_redirect_url;

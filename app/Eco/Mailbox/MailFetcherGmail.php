@@ -174,7 +174,7 @@ class MailFetcherGmail
         ]);
 //        print_r($email); die();
         $email->save();
-        $email->markAsRead();
+        $emailData->markAsRead();
 
         //if from email exists in any of the email addresses make a pivot record.
 
