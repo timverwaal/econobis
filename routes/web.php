@@ -85,7 +85,7 @@ Route::get('/oauth/gmail/fetch-mails-unread', function (){
 });
 Route::get('/oauth/gmail/fetch-mails-after', function (){
     try{
-        $messages = LaravelGmail::message()->after(Carbon::yesterday())->preload()->all();
+        $messages = LaravelGmail::message()->after(Carbon::yesterday()->format("Y-m-d-H-i-s"))->preload()->all();
         foreach ( $messages as $message ) {
             echo "User: " . LaravelGmail::user() . "<br />";
             echo "Id: " . $message->getId() . "<br />";
