@@ -9,7 +9,7 @@
 namespace App\Http\Controllers\Api\Mailbox;
 
 
-class GmailConfigs
+class GmailConfigs2
 {
 //    protected $config;
     protected $config = [];
