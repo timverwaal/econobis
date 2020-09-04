@@ -21,7 +21,8 @@ use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 Route::get('/', 'HomeController@welcome');
 
-Route::get('/oauth/gmail', function (){
+Route::get('/oauth/gmail/{mailboxId}', function ($mailboxId){
+    LaravelGmail::setUserId($mailboxId);
     return LaravelGmail::redirect();
 });
 
@@ -33,23 +34,21 @@ Route::get('/oauth/gmail/mailbox/{mailboxId}', function ($mailboxId){
 
 });
 
-
 Route::get('/oauth/gmail/callback', function (){
+//    LaravelGmail::setUserId(18);
     LaravelGmail::makeToken();
     return redirect()->to('/');
 });
 
-Route::get('/oauth/gmail/logout', function (){
+Route::get('/oauth/gmail/logout/{mailboxId}', function (){
     LaravelGmail::logout(); //It returns exception if fails
     return redirect()->to('/');
 });
 
-Route::get('/oauth/gmail/checkuser', function (){
-    echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
-});
 Route::get('/oauth/gmail/checkuser/{mailboxId}', function ($mailboxId){
-
+//    echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
     $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
+    LaravelGmail::setUserId($mailboxId);
     $gmailController = new GmailController($mailbox);
     echo $gmailController->checkOauthGmail() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
 });
@@ -112,6 +111,7 @@ Route::get('/oauth/gmail/fetch-mails-after', function (){
 
 Route::get('/oauth/gmail/fetch-mails/{mailboxId}', function ($mailboxId){
 
+    LaravelGmail::setUserId($mailboxId);
     $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
     $mailFetcherGmail = new MailFetcherGmail($mailbox);
     $mailFetcherGmail->fetchNew();
