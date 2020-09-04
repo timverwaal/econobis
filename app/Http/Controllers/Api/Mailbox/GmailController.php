@@ -28,7 +28,7 @@ class GmailController extends Controller
         $config['gmail.client_id'] = $this->mailbox->gmail_client_id;
         $config['gmail.client_secret'] = $this->mailbox->gmail_client_secret;
         $config['gmail.redirect_url'] = $this->mailbox->gmail_redirect_url;
-        $config['gmail.credentials_file_name'] = "gmail-json".$this->mailbox->id;
+        $config['gmail.credentials_file_name'] = "gmail-json";
         $config['gmail.allow_multiple_credentials'] = true;
         $config['gmail.allow_json_encrypt'] = false;
         $config['gmail.access_type'] = "offline";
@@ -48,7 +48,7 @@ class GmailController extends Controller
         $config['gmail.client_id'] = $this->mailbox->gmail_client_id;
         $config['gmail.client_secret'] = $this->mailbox->gmail_client_secret;
         $config['gmail.redirect_url'] = $this->mailbox->gmail_redirect_url;
-        $config['gmail.credentials_file_name'] = "gmail-json".$this->mailbox->id;
+        $config['gmail.credentials_file_name'] = "gmail-json";
         $config['gmail.allow_multiple_credentials'] = true;
         $config['gmail.allow_json_encrypt'] = false;
         $config['gmail.access_type'] = "offline";

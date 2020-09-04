@@ -21,7 +21,7 @@ use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 Route::get('/', 'HomeController@welcome');
 
-Route::get('/oauth/gmail/{mailboxId}', function ($mailboxId){
+Route::get('/oauth/gmail/mailbox-normal/{mailboxId}', function ($mailboxId){
     LaravelGmail::setUserId($mailboxId);
     return LaravelGmail::redirect();
 });
@@ -43,6 +43,10 @@ Route::get('/oauth/gmail/callback', function (){
 Route::get('/oauth/gmail/logout/{mailboxId}', function (){
     LaravelGmail::logout(); //It returns exception if fails
     return redirect()->to('/');
+});
+
+Route::get('/oauth/gmail/checkuser', function (){
+    echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
 });
 
 Route::get('/oauth/gmail/checkuser/{mailboxId}', function ($mailboxId){
