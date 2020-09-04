@@ -37,6 +37,8 @@ class MailFetcherGmail
 
     public function fetchNew()
     {
+        LaravelGmail::setUserId($this->mailbox->id);
+
         try {
             $emails = LaravelGmail::message()->unread()->preload()->all();
         } catch(\Exception $ex) {

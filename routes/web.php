@@ -21,7 +21,11 @@ use Dacastro4\LaravelGmail\Facade\LaravelGmail;
 
 Route::get('/', 'HomeController@welcome');
 
-Route::get('/oauth/gmail/mailbox-normal/{mailboxId}', function ($mailboxId){
+Route::get('/oauth/gmail/mailbox-single/{mailboxId}', function ($mailboxId){
+    if(!isset($_SESSION['gmailMailboxId'])){
+        $_SESSION['gmailMailboxId'] = $mailboxId;
+    }
+
     LaravelGmail::setUserId($mailboxId);
     return LaravelGmail::redirect();
 });
@@ -29,24 +33,47 @@ Route::get('/oauth/gmail/mailbox-normal/{mailboxId}', function ($mailboxId){
 Route::get('/oauth/gmail/mailbox/{mailboxId}', function ($mailboxId){
 
     $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
+    LaravelGmail::setUserId($mailboxId);
     $gmailController = new GmailController($mailbox);
     return $gmailController->oauthGmail();
 
 });
 
 Route::get('/oauth/gmail/callback', function (){
-//    LaravelGmail::setUserId(18);
+    if(!isset($_SESSION['gmailMailboxId'])){
+        echo "Geen geldige gmail mailbox gevonden na callback";
+        return;
+    }
+
+    $mailboxId = $_SESSION['gmailMailboxId'];
+    unset($_SESSION['gmailMailboxId']);
+
+    LaravelGmail::setUserId($mailboxId);
     LaravelGmail::makeToken();
+    //todo hier wellicht opslaan token in mailbox?
+    return redirect()->to('/oauth/gmail/checkuser/'.$mailboxId);
+});
+
+Route::get('/oauth/gmail/fetch-mails/{mailboxId}', function ($mailboxId){
+
+    $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
+    $mailFetcherGmail = new MailFetcherGmail($mailbox);
+    $mailFetcherGmail->fetchNew();
     return redirect()->to('/');
 });
 
-Route::get('/oauth/gmail/logout/{mailboxId}', function (){
+//Route::get('/oauth/gmail/logout', function (){
+//    LaravelGmail::logout(); //It returns exception if fails
+//    return redirect()->to('/oauth/gmail/checkuser');
+//});
+//Route::get('/oauth/gmail/checkuser', function (){
+//    echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
+//});
+
+Route::get('/oauth/gmail/logout/{mailboxId}', function ($mailboxId){
+    LaravelGmail::setUserId($mailboxId);
     LaravelGmail::logout(); //It returns exception if fails
-    return redirect()->to('/');
-});
-
-Route::get('/oauth/gmail/checkuser', function (){
-    echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
+    return redirect()->to('/oauth/gmail/checkuser/'.$mailboxId);
 });
 
 Route::get('/oauth/gmail/checkuser/{mailboxId}', function ($mailboxId){
@@ -57,22 +84,22 @@ Route::get('/oauth/gmail/checkuser/{mailboxId}', function ($mailboxId){
     echo $gmailController->checkOauthGmail() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
 });
 
-Route::get('/oauth/gmail/fetch-mails-user/{user}', function ($user){
-    echo "User (parm): " . $user . "<br />";
-    $messages = LaravelGmail::message()->from($user)->unread()->preload()->all();
-    foreach ( $messages as $message ) {
-        echo "User: " . LaravelGmail::user() . "<br />";
-        echo "Id: " . $message->getId() . "<br />";
-        echo "Internal date : " . $message->getInternalDate() . "<br />";
-        echo "Date: " . $message->getDate() . "<br />";
-        echo "Subject: " . $message->getSubject() . "<br />";
-        echo "Bijlage(n): " . ($message->hasAttachments() ? 'Ja' : 'Nee' ) . "<br />";
-        echo "Tekst:" . "<br />";
-        echo $message->getHtmlBody();
-        echo "<br />";
-    }
-});
-
+//Route::get('/oauth/gmail/fetch-mails-user/{user}', function ($user){
+//    echo "User (parm): " . $user . "<br />";
+//    $messages = LaravelGmail::message()->from($user)->unread()->preload()->all();
+//    foreach ( $messages as $message ) {
+//        echo "User: " . LaravelGmail::user() . "<br />";
+//        echo "Id: " . $message->getId() . "<br />";
+//        echo "Internal date : " . $message->getInternalDate() . "<br />";
+//        echo "Date: " . $message->getDate() . "<br />";
+//        echo "Subject: " . $message->getSubject() . "<br />";
+//        echo "Bijlage(n): " . ($message->hasAttachments() ? 'Ja' : 'Nee' ) . "<br />";
+//        echo "Tekst:" . "<br />";
+//        echo $message->getHtmlBody();
+//        echo "<br />";
+//    }
+//});
+//
 Route::get('/oauth/gmail/fetch-mails-unread', function (){
     try{
         $messages = LaravelGmail::message()->unread()->preload()->all();
@@ -112,16 +139,6 @@ Route::get('/oauth/gmail/fetch-mails-after', function (){
     }
 
 });
-
-Route::get('/oauth/gmail/fetch-mails/{mailboxId}', function ($mailboxId){
-
-    LaravelGmail::setUserId($mailboxId);
-    $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
-    $mailFetcherGmail = new MailFetcherGmail($mailbox);
-    $mailFetcherGmail->fetchNew();
-    return redirect()->to('/');
-});
-
 
 Route::get('/oauth/gmail/fetch-mail/{id}', function ($id){
     $mail = LaravelGmail::message()->get( $id );
