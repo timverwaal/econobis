@@ -24,12 +24,11 @@ class GmailController extends Controller
 
     public function oauthGmail()
     {
-//        return LaravelGmail::redirect();
         $config['gmail.project_id'] = $this->mailbox->gmail_project_id;
         $config['gmail.client_id'] = $this->mailbox->gmail_client_id;
         $config['gmail.client_secret'] = $this->mailbox->gmail_client_secret;
         $config['gmail.redirect_url'] = $this->mailbox->gmail_redirect_url;
-        $config['gmail.credentials_file_name'] = "gmail-".$this->mailbox->id."-json";
+        $config['gmail.credentials_file_name'] = "gmail-json".$this->mailbox->id;
         $config['gmail.allow_multiple_credentials'] = true;
         $config['gmail.allow_json_encrypt'] = false;
         $config['gmail.access_type'] = "offline";
@@ -41,6 +40,23 @@ class GmailController extends Controller
 //        dd($configs['config']);
         $gmail = new EconobisLaravelGmailClass($config, $this->mailbox->id);
         return $gmail->redirect();
+    }
+
+    public function checkOauthGmail()
+    {
+        $config['gmail.project_id'] = $this->mailbox->gmail_project_id;
+        $config['gmail.client_id'] = $this->mailbox->gmail_client_id;
+        $config['gmail.client_secret'] = $this->mailbox->gmail_client_secret;
+        $config['gmail.redirect_url'] = $this->mailbox->gmail_redirect_url;
+        $config['gmail.credentials_file_name'] = "gmail-json".$this->mailbox->id;
+        $config['gmail.allow_multiple_credentials'] = true;
+        $config['gmail.allow_json_encrypt'] = false;
+        $config['gmail.access_type'] = "offline";
+        $config['gmail.approval_prompt'] = "force";
+        $config['gmail.scopes'] = ['readonly', 'modify'];
+
+        $gmail = new EconobisLaravelGmailClass($config, $this->mailbox->id);
+        return $gmail->check();
     }
 
 

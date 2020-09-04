@@ -47,6 +47,12 @@ Route::get('/oauth/gmail/logout', function (){
 Route::get('/oauth/gmail/checkuser', function (){
     echo LaravelGmail::check() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
 });
+Route::get('/oauth/gmail/checkuser/{mailboxId}', function ($mailboxId){
+
+    $mailbox = \App\Eco\Mailbox\Mailbox::find($mailboxId);
+    $gmailController = new GmailController($mailbox);
+    echo $gmailController->checkOauthGmail() ? 'Ingelogd: ' . LaravelGmail::user() : 'Niet ingelogd';
+});
 
 Route::get('/oauth/gmail/fetch-mails-user/{user}', function ($user){
     echo "User (parm): " . $user . "<br />";
