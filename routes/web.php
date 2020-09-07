@@ -11,6 +11,8 @@
 |
 */
 
+session_start();
+
 Route::get('/twinfield', 'Api\Twinfield\TwinfieldController@twinfield');
 
 // Welcome
@@ -40,13 +42,13 @@ Route::get('/oauth/gmail/mailbox/{mailboxId}', function ($mailboxId){
 });
 
 Route::get('/oauth/gmail/callback', function (){
-    if(!isset($_SESSION['gmailMailboxId'])){
+    if(!isset($session['gmailMailboxId'])){
         echo "Geen geldige gmail mailbox gevonden na callback";
         return;
     }
 
-    $mailboxId = $_SESSION['gmailMailboxId'];
-    unset($_SESSION['gmailMailboxId']);
+    $mailboxId = $session['gmailMailboxId'];
+    unset($session['gmailMailboxId']);
 
     LaravelGmail::setUserId($mailboxId);
     LaravelGmail::makeToken();
